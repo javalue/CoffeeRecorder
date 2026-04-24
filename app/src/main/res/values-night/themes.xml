@@ -1,0 +1,19 @@
+<resources xmlns:tools="http://schemas.android.com/tools">
+    <style name="Theme.CoffeeRecorder" parent="Theme.MaterialComponents.DayNight.NoActionBar">
+        <item name="colorPrimary">@color/coffee_secondary</item>
+        <item name="colorPrimaryVariant">@color/coffee_primary</item>
+        <item name="colorOnPrimary">@color/black</item>
+        <item name="colorSecondary">@color/coffee_surface_alt</item>
+        <item name="colorSecondaryVariant">@color/coffee_surface_alt</item>
+        <item name="colorOnSecondary">@color/coffee_text</item>
+        <item name="colorSurface">@color/coffee_surface</item>
+        <item name="colorOnSurface">@color/coffee_text</item>
+        <item name="android:colorBackground">@color/coffee_background</item>
+        <item name="android:windowBackground">@color/coffee_background</item>
+        <item name="android:statusBarColor">?attr/colorPrimaryVariant</item>
+        <item name="android:navigationBarColor">@color/coffee_background</item>
+        <item name="materialCardViewStyle">@style/Widget.CoffeeRecorder.CardView</item>
+        <item name="textInputStyle">@style/Widget.CoffeeRecorder.TextInputLayout</item>
+        <item name="shapeAppearanceMediumComponent">@style/ShapeAppearance.CoffeeRecorder.Medium</item>
+    </style>
+</resources>

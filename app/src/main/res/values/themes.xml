@@ -1,0 +1,37 @@
+<resources xmlns:tools="http://schemas.android.com/tools">
+    <style name="Theme.CoffeeRecorder" parent="Theme.MaterialComponents.DayNight.NoActionBar">
+        <item name="colorPrimary">@color/coffee_primary</item>
+        <item name="colorPrimaryVariant">@color/coffee_primary_dark</item>
+        <item name="colorOnPrimary">@color/white</item>
+        <item name="colorSecondary">@color/coffee_secondary</item>
+        <item name="colorSecondaryVariant">@color/coffee_secondary</item>
+        <item name="colorOnSecondary">@color/coffee_text</item>
+        <item name="colorSurface">@color/coffee_surface</item>
+        <item name="colorOnSurface">@color/coffee_text</item>
+        <item name="android:colorBackground">@color/coffee_background</item>
+        <item name="android:windowBackground">@color/coffee_background</item>
+        <item name="android:statusBarColor">?attr/colorPrimaryVariant</item>
+        <item name="android:navigationBarColor">@color/coffee_background</item>
+        <item name="materialCardViewStyle">@style/Widget.CoffeeRecorder.CardView</item>
+        <item name="textInputStyle">@style/Widget.CoffeeRecorder.TextInputLayout</item>
+        <item name="shapeAppearanceMediumComponent">@style/ShapeAppearance.CoffeeRecorder.Medium</item>
+    </style>
+
+    <style name="Widget.CoffeeRecorder.CardView" parent="Widget.MaterialComponents.CardView">
+        <item name="cardCornerRadius">24dp</item>
+        <item name="cardElevation">0dp</item>
+        <item name="strokeColor">@color/coffee_divider</item>
+        <item name="strokeWidth">1dp</item>
+    </style>
+
+    <style name="Widget.CoffeeRecorder.TextInputLayout" parent="Widget.MaterialComponents.TextInputLayout.OutlinedBox.Dense">
+        <item name="boxBackgroundColor">@color/coffee_surface</item>
+        <item name="boxStrokeColor">@color/coffee_divider</item>
+        <item name="hintTextColor">@color/coffee_text_muted</item>
+    </style>
+
+    <style name="ShapeAppearance.CoffeeRecorder.Medium" parent="ShapeAppearance.MaterialComponents.MediumComponent">
+        <item name="cornerFamily">rounded</item>
+        <item name="cornerSize">20dp</item>
+    </style>
+</resources>
