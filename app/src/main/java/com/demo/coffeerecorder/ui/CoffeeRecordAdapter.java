@@ -4,6 +4,7 @@ import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
@@ -55,9 +56,13 @@ public class CoffeeRecordAdapter extends RecyclerView.Adapter<CoffeeRecordAdapte
         private final Chip ratingChip;
         private final TextView priceView;
         private final TextView notesView;
+        private final ImageView thumbnailView;
+        private final TextView thumbnailFallbackView;
 
         RecordViewHolder(@NonNull View itemView) {
             super(itemView);
+            thumbnailView = itemView.findViewById(R.id.imageThumbnail);
+            thumbnailFallbackView = itemView.findViewById(R.id.tvThumbnailFallback);
             beanNameView = itemView.findViewById(R.id.tvBeanName);
             createdAtView = itemView.findViewById(R.id.tvCreatedAt);
             metaView = itemView.findViewById(R.id.tvMeta);
@@ -70,6 +75,14 @@ public class CoffeeRecordAdapter extends RecyclerView.Adapter<CoffeeRecordAdapte
         void bind(CoffeeRecordEntity record, Listener listener) {
             beanNameView.setText(record.beanName);
             createdAtView.setText(CoffeeFormatters.formatDateTime(record.drankAt));
+            CoffeePhotoLoader.bindThumbnail(
+                    thumbnailView,
+                    thumbnailFallbackView,
+                    record.photoUri,
+                    TextUtils.isEmpty(record.drinkType)
+                            ? itemView.getContext().getString(R.string.home_icon_cup)
+                            : record.drinkType.substring(0, 1)
+            );
             metaView.setText(itemView.getContext().getString(
                     R.string.record_meta_format,
                     record.drinkType,

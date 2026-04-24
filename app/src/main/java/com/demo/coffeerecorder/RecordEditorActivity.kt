@@ -2,25 +2,44 @@ package com.demo.coffeerecorder
 
 import android.content.Context
 import android.content.Intent
+import android.net.Uri
 import android.os.Bundle
+import android.view.View
 import android.widget.ArrayAdapter
 import android.widget.Toast
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.content.FileProvider
 import androidx.lifecycle.lifecycleScope
 import com.demo.coffeerecorder.data.local.CoffeeRecordEntity
 import com.demo.coffeerecorder.databinding.ActivityRecordEditorBinding
+import com.demo.coffeerecorder.ui.CoffeePhotoLoader
 import com.demo.coffeerecorder.viewmodel.CoffeeViewModel
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import kotlinx.coroutines.launch
+import java.io.File
 
 class RecordEditorActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityRecordEditorBinding
     private val viewModel: CoffeeViewModel by viewModels()
     private var currentRecord: CoffeeRecordEntity? = null
+    private var currentPhotoUri: Uri? = null
+    private var previousPhotoUriBeforeCapture: Uri? = null
     private val recordId: Long? by lazy {
         intent.getLongExtra(EXTRA_RECORD_ID, 0L).takeIf { it > 0L }
+    }
+    private val takePhotoLauncher = registerForActivityResult(ActivityResultContracts.TakePicture()) { success ->
+        if (success) {
+            renderPhotoPreview()
+        } else {
+            deletePhotoIfOwned(currentPhotoUri?.toString())
+            currentPhotoUri = previousPhotoUriBeforeCapture
+            renderPhotoPreview()
+            Toast.makeText(this, R.string.photo_capture_failed, Toast.LENGTH_SHORT).show()
+        }
+        previousPhotoUriBeforeCapture = null
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -28,10 +47,13 @@ class RecordEditorActivity : AppCompatActivity() {
         binding = ActivityRecordEditorBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
+        currentPhotoUri = savedInstanceState?.getString(STATE_PHOTO_URI)?.let(Uri::parse)
+
         setupToolbar()
         setupDropdowns()
         setupActions()
         loadRecordIfNeeded()
+        renderPhotoPreview()
     }
 
     private fun setupToolbar() {
@@ -72,6 +94,9 @@ class RecordEditorActivity : AppCompatActivity() {
         binding.buttonDelete.setOnClickListener {
             confirmDelete()
         }
+        binding.buttonTakePhoto.setOnClickListener {
+            launchCamera()
+        }
     }
 
     private fun loadRecordIfNeeded() {
@@ -85,15 +110,17 @@ class RecordEditorActivity : AppCompatActivity() {
     }
 
     private fun populateFields(record: CoffeeRecordEntity) {
-        binding.etBeanName.setText(record.beanName)
-        binding.etRoaster.setText(record.roaster)
-        binding.etOrigin.setText(record.origin)
-        binding.actvDrinkType.setText(record.drinkType, false)
-        binding.actvBrewMethod.setText(record.brewMethod, false)
+        binding.etBeanName.setText(record.beanName.orEmpty())
+        binding.etRoaster.setText(record.roaster.orEmpty())
+        binding.etOrigin.setText(record.origin.orEmpty())
+        binding.actvDrinkType.setText(record.drinkType.orEmpty(), false)
+        binding.actvBrewMethod.setText(record.brewMethod.orEmpty(), false)
         binding.actvRating.setText(record.rating.toString(), false)
         binding.actvCupSize.setText(record.cupSizeMl.toString(), false)
         binding.etPrice.setText(if (record.priceYuan > 0) record.priceYuan.toString() else "")
-        binding.etNotes.setText(record.notes)
+        binding.etNotes.setText(record.notes.orEmpty())
+        currentPhotoUri = record.photoUri?.takeIf { it.isNotBlank() }?.let(Uri::parse)
+        renderPhotoPreview()
     }
 
     private fun saveRecord() {
@@ -164,10 +191,16 @@ class RecordEditorActivity : AppCompatActivity() {
             this.cupSizeMl = cupSizeMl
             this.priceYuan = priceYuan
             this.notes = notes
+            this.photoUri = currentPhotoUri?.toString().orEmpty()
             this.drankAt = currentRecord?.drankAt ?: System.currentTimeMillis()
         }
 
         lifecycleScope.launch {
+            if (!currentRecord?.photoUri.isNullOrBlank() &&
+                currentRecord?.photoUri != record.photoUri
+            ) {
+                deletePhotoIfOwned(currentRecord?.photoUri)
+            }
             viewModel.saveRecord(record)
             Toast.makeText(this@RecordEditorActivity, R.string.record_saved, Toast.LENGTH_SHORT).show()
             finish()
@@ -191,6 +224,7 @@ class RecordEditorActivity : AppCompatActivity() {
             .setNegativeButton(R.string.action_cancel, null)
             .setPositiveButton(R.string.action_delete) { _, _ ->
                 lifecycleScope.launch {
+                    deletePhotoIfOwned(record.photoUri)
                     viewModel.deleteRecord(record)
                     Toast.makeText(
                         this@RecordEditorActivity,
@@ -203,8 +237,66 @@ class RecordEditorActivity : AppCompatActivity() {
             .show()
     }
 
+    private fun launchCamera() {
+        previousPhotoUriBeforeCapture = currentPhotoUri
+        val newUri = createPhotoUri()
+        currentPhotoUri = newUri
+        takePhotoLauncher.launch(newUri)
+    }
+
+    private fun createPhotoUri(): Uri {
+        val photoDirectory = File(filesDir, PHOTO_DIRECTORY).apply {
+            if (!exists()) {
+                mkdirs()
+            }
+        }
+        val photoFile = File(photoDirectory, "coffee_${System.currentTimeMillis()}.jpg")
+        return FileProvider.getUriForFile(
+            this,
+            "$packageName.fileprovider",
+            photoFile
+        )
+    }
+
+    private fun renderPhotoPreview() {
+        CoffeePhotoLoader.bindThumbnail(
+            imageView = binding.imagePhotoPreview,
+            fallbackView = binding.tvPhotoPlaceholder,
+            photoUri = currentPhotoUri?.toString(),
+            fallbackText = getString(R.string.photo_placeholder)
+        )
+        binding.buttonTakePhoto.text = if (currentPhotoUri == null) {
+            getString(R.string.action_take_photo)
+        } else {
+            getString(R.string.action_retake_photo)
+        }
+    }
+
+    private fun deletePhotoIfOwned(photoUri: String?) {
+        val path = Uri.parse(photoUri.orEmpty()).path ?: return
+        if (!path.contains(PHOTO_DIRECTORY)) {
+            return
+        }
+
+        val marker = "/$PHOTO_DIRECTORY/"
+        val index = path.indexOf(marker)
+        if (index == -1) {
+            return
+        }
+
+        val fileName = path.substring(index + marker.length)
+        File(File(filesDir, PHOTO_DIRECTORY), fileName).takeIf { it.exists() }?.delete()
+    }
+
+    override fun onSaveInstanceState(outState: Bundle) {
+        super.onSaveInstanceState(outState)
+        outState.putString(STATE_PHOTO_URI, currentPhotoUri?.toString())
+    }
+
     companion object {
         private const val EXTRA_RECORD_ID = "extra_record_id"
+        private const val STATE_PHOTO_URI = "state_photo_uri"
+        private const val PHOTO_DIRECTORY = "coffee_photos"
 
         fun createIntent(context: Context, recordId: Long? = null): Intent {
             return Intent(context, RecordEditorActivity::class.java).apply {

@@ -17,5 +17,6 @@ public class CoffeeRecordEntity {
     public int cupSizeMl = 0;
     public double priceYuan = 0.0;
     public String notes = "";
+    public String photoUri = "";
     public long drankAt = 0L;
 }

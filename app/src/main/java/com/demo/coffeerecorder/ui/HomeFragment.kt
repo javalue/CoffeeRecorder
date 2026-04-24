@@ -27,7 +27,6 @@ class HomeFragment : Fragment() {
     private var _binding: FragmentHomeBinding? = null
     private val binding get() = _binding!!
     private val viewModel: CoffeeViewModel by activityViewModels()
-    private val timelineAdapter = HomeTimelineAdapter()
     private val dateAdapter = HomeDateAdapter { date ->
         selectedDate = date
         renderDates(allRecords)
@@ -49,7 +48,6 @@ class HomeFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
         setupHeader()
         setupDateList()
-        setupTimeline()
         setupActions()
 
         viewModel.records.observe(viewLifecycleOwner) { records ->
@@ -81,16 +79,6 @@ class HomeFragment : Fragment() {
         binding.recyclerViewDates.adapter = dateAdapter
     }
 
-    private fun setupTimeline() {
-        binding.recyclerViewRecent.layoutManager = LinearLayoutManager(requireContext())
-        binding.recyclerViewRecent.adapter = timelineAdapter
-        timelineAdapter.setListener(object : HomeTimelineAdapter.Listener {
-            override fun onRecordClicked(recordId: Long) {
-                (activity as? MainActivity)?.openRecordEditor(recordId)
-            }
-        })
-    }
-
     private fun setupActions() {
         binding.cardAddCoffee.setOnClickListener {
             (activity as? MainActivity)?.openRecordEditor()
@@ -115,7 +103,7 @@ class HomeFragment : Fragment() {
         val monthCupCount = monthRecords.size
         val monthHours = monthCupCount * 0.95
         val favoriteDrink = monthRecords
-            .groupingBy { it.drinkType.ifBlank { getString(R.string.summary_no_drink) } }
+            .groupingBy { it.drinkType.orEmpty().ifBlank { getString(R.string.summary_no_drink) } }
             .eachCount()
             .maxByOrNull { it.value }
 
@@ -168,9 +156,30 @@ class HomeFragment : Fragment() {
             .filter { toLocalDate(it.drankAt) == currentDate }
             .sortedBy { it.drankAt }
 
-        timelineAdapter.submitItems(filteredRecords)
+        binding.tvCoffeeListTitle.text = getString(
+            R.string.section_coffee_list_with_date,
+            getString(R.string.home_selected_date_label, currentDate.monthValue, currentDate.dayOfMonth)
+        )
         binding.tvRecentEmpty.visibility = if (filteredRecords.isEmpty()) View.VISIBLE else View.GONE
-        binding.recyclerViewRecent.visibility = if (filteredRecords.isEmpty()) View.GONE else View.VISIBLE
+        binding.layoutTimelineContainer.visibility = if (filteredRecords.isEmpty()) View.GONE else View.VISIBLE
+
+        binding.layoutTimelineContainer.removeAllViews()
+        val inflater = LayoutInflater.from(requireContext())
+        filteredRecords.forEachIndexed { index, record ->
+            val itemView = inflater.inflate(
+                R.layout.item_home_timeline,
+                binding.layoutTimelineContainer,
+                false
+            )
+            HomeTimelineRenderer.bind(
+                itemView = itemView,
+                record = record,
+                isLast = index == filteredRecords.lastIndex
+            ) {
+                (activity as? MainActivity)?.openRecordEditor(it)
+            }
+            binding.layoutTimelineContainer.addView(itemView)
+        }
     }
 
     private fun toLocalDate(timestamp: Long): LocalDate {

@@ -37,6 +37,60 @@
                 android:textColor="@color/coffee_text_muted"
                 android:textSize="14sp" />
 
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                android:text="@string/label_photo_section"
+                android:textColor="@color/coffee_text"
+                android:textSize="16sp"
+                android:textStyle="bold" />
+
+            <com.google.android.material.card.MaterialCardView
+                android:layout_width="match_parent"
+                android:layout_height="220dp"
+                android:layout_marginTop="10dp"
+                app:cardBackgroundColor="@color/coffee_surface"
+                app:strokeColor="@color/coffee_divider"
+                app:strokeWidth="1dp">
+
+                <FrameLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent">
+
+                    <com.google.android.material.imageview.ShapeableImageView
+                        android:id="@+id/imagePhotoPreview"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:contentDescription="@string/photo_preview_content"
+                        android:scaleType="centerCrop"
+                        android:visibility="gone"
+                        app:shapeAppearanceOverlay="@style/ShapeAppearance.CoffeeRecorder.Medium" />
+
+                    <TextView
+                        android:id="@+id/tvPhotoPlaceholder"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:gravity="center"
+                        android:padding="24dp"
+                        android:text="@string/photo_placeholder"
+                        android:textColor="@color/coffee_text_muted"
+                        android:textSize="14sp" />
+                </FrameLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/buttonTakePhoto"
+                style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="12dp"
+                android:text="@string/action_take_photo"
+                app:icon="@android:drawable/ic_menu_camera"
+                app:iconTint="@color/coffee_primary"
+                app:strokeColor="@color/coffee_primary"
+                app:strokeWidth="1dp" />
+
             <com.google.android.material.textfield.TextInputLayout
                 android:id="@+id/inputBeanName"
                 android:layout_width="match_parent"
