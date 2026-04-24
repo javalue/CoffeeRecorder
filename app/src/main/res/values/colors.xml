@@ -6,10 +6,15 @@
     <color name="coffee_background">#F7F1EA</color>
     <color name="coffee_surface">#FFFDF9</color>
     <color name="coffee_surface_alt">#EFE1D2</color>
+    <color name="coffee_surface_soft">#F4E8DA</color>
     <color name="coffee_text">#2B1D13</color>
     <color name="coffee_text_muted">#7D6756</color>
+    <color name="coffee_text_light">#FBF3EA</color>
     <color name="coffee_success">#3C7A59</color>
+    <color name="coffee_warning">#E4A03C</color>
+    <color name="coffee_heart">#E98065</color>
     <color name="coffee_divider">#E2D3C4</color>
+    <color name="coffee_timeline">#E9DCCD</color>
     <color name="white">#FFFFFFFF</color>
     <color name="black">#FF000000</color>
 </resources>

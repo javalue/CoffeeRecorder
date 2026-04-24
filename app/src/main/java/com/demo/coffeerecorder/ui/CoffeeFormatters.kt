@@ -9,10 +9,16 @@ import java.util.Locale
 object CoffeeFormatters {
 
     private val timeFormatter = SimpleDateFormat("MM/dd HH:mm", Locale.getDefault())
+    private val hourMinuteFormatter = SimpleDateFormat("HH:mm", Locale.getDefault())
 
     @JvmStatic
     fun formatDateTime(timestamp: Long): String {
         return timeFormatter.format(Date(timestamp))
+    }
+
+    @JvmStatic
+    fun formatHourMinute(timestamp: Long): String {
+        return hourMinuteFormatter.format(Date(timestamp))
     }
 
     @JvmStatic
